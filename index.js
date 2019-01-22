@@ -1,5 +1,5 @@
 const express = require("express");
-const helmet = require("helmet")
+const helmet = require("helmet");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const KnexSessionStore = require("connect-session-knex")(session);
@@ -14,16 +14,13 @@ const sessionConfig = {
   name: "auth-i",
   secret: "shhh.this.is.a.secret",
   httpOnly: true,
-  resave: false, 
-  saveUninitialized: false, 
+  resave: false,
+  saveUninitialized: false,
   cookie: {
     maxAge: 1000 * 60 * 1, // 1 minute
     secure: false
   }
-}
-
-
-
+};
 
 server.use(helmet());
 server.use(express.json());
@@ -37,11 +34,10 @@ function protected(req, res, next) {
   }
 }
 
-
 // GET Users
 server.get("/api/users", protected, (req, res) => {
   db("users")
-    .select("id", "username" )
+    .select("id", "username")
     .then(users => {
       res.status(200).json(users);
     })
@@ -50,8 +46,7 @@ server.get("/api/users", protected, (req, res) => {
     });
 });
 
-
-// REGISTER User 
+// REGISTER User
 server.post("/api/register", (req, res) => {
   const userInfo = req.body;
 
@@ -62,6 +57,7 @@ server.post("/api/register", (req, res) => {
   db("users")
     .insert(userInfo)
     .then(ids => {
+      req.session.user = userInfo;
       res.status(201).json(ids);
     })
     .catch(err => {
@@ -73,24 +69,41 @@ server.post("/api/register", (req, res) => {
 
 // LOGIN User
 server.post("/api/login", (req, res) => {
-    const userInfo = req.body;
+  const userInfo = req.body;
 
-    db("users")
-    .where({ username: userInfo.username})
+  db("users")
+    .where({ username: userInfo.username })
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(userInfo.password, user.password)) {
         req.session.user = user;
-        res.status(200).json({ message: `Hello ${user.username}` })
+        res.status(200).json({ message: `Hello ${user.username}` });
       } else {
-        releaseEvents.status(401).json({ error: "Please make sure you have the correct username and password." })
+        releaseEvents.status(401).json({
+          error: "Please make sure you have the correct username and password."
+        });
       }
     })
     .catch(err => {
-      res.status(500).json({ error: "There was an error while logging in." })
-    })
-})
+      res.status(500).json({ error: "There was an error while logging in." });
+    });
+});
 
-
+// LOGOUT
+server.get("/logout", (req, res) => {
+  if (req.session) {
+    req.session.destroy(err => {
+      if (err) {
+        res
+          .status(500)
+          .json({ error: "There was an error while logging out." });
+      } else {
+        res.status(200).json({ message: "You have been logged out." });
+      }
+    });
+  } else {
+    res.json({ message: "You have already logged out." });
+  }
+});
 
 server.listen(5000, () => console.log("Running on port 5000"));
