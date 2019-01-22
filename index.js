@@ -19,7 +19,14 @@ const sessionConfig = {
   cookie: {
     maxAge: 1000 * 60 * 1, // 1 minute
     secure: false
-  }
+  },
+  store: new KnexSessionStore({ 
+    tablename: "sessions",
+    sidfieldname: "sid", 
+    knex: db, 
+    createtable: true, 
+    clearInterval: 1000 * 60 * 10
+  })
 };
 
 server.use(helmet());
