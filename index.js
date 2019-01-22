@@ -1,17 +1,47 @@
 const express = require("express");
+const helmet = require("helmet")
 const bcrypt = require("bcryptjs");
+const session = require("express-session");
+const KnexSessionStore = require("connect-session-knex")(session);
+
 const knex = require("knex");
 const knexConfig = require("./knexfile.js");
 const db = knex(knexConfig.development);
 
 const server = express();
 
+const sessionConfig = {
+  name: "auth-i",
+  secret: "shhh.this.is.a.secret",
+  httpOnly: true,
+  resave: false, 
+  saveUninitialized: false, 
+  cookie: {
+    maxAge: 1000 * 60 * 1, // 1 minute
+    secure: false
+  }
+}
+
+
+
+
+server.use(helmet());
 server.use(express.json());
+server.use(session(sessionConfig));
+
+function protected(req, res, next) {
+  if (req.session && req.session.user) {
+    next();
+  } else {
+    res.status(401).json({ message: "You have not been authenticated." });
+  }
+}
+
 
 // GET Users
-server.get("/api/users", (req, res) => {
+server.get("/api/users", protected, (req, res) => {
   db("users")
-    .select("id", "username")
+    .select("id", "username" )
     .then(users => {
       res.status(200).json(users);
     })
@@ -49,7 +79,8 @@ server.post("/api/login", (req, res) => {
     .where({ username: userInfo.username})
     .first()
     .then(user => {
-      if (user&& bcrypt.compareSync(userInfo.password, user.password)) {
+      if (user && bcrypt.compareSync(userInfo.password, user.password)) {
+        req.session.user = user;
         res.status(200).json({ message: `Hello ${user.username}` })
       } else {
         releaseEvents.status(401).json({ error: "Please make sure you have the correct username and password." })
