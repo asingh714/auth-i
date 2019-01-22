@@ -20,11 +20,11 @@ const sessionConfig = {
     maxAge: 1000 * 60 * 1, // 1 minute
     secure: false
   },
-  store: new KnexSessionStore({ 
+  store: new KnexSessionStore({
     tablename: "sessions",
-    sidfieldname: "sid", 
-    knex: db, 
-    createtable: true, 
+    sidfieldname: "sid",
+    knex: db,
+    createtable: true,
     clearInterval: 1000 * 60 * 10
   })
 };
@@ -96,7 +96,7 @@ server.post("/api/login", (req, res) => {
     });
 });
 
-// LOGOUT
+// LOGOUT User
 server.get("/logout", (req, res) => {
   if (req.session) {
     req.session.destroy(err => {
