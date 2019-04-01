@@ -31,4 +31,13 @@ router.post("/register", (req, res) => {
   }
 });
 
+router.get("/users", (req, res) => {
+  db("users")
+    .select("id", "username", "password")
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => res.send(err));
+});
+
 module.exports = router;
