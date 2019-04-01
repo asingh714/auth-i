@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 
 const db = require("../dbConfig");
 
+const restricted = require("../../config/restricted");
+
 router.post("/register", (req, res) => {
   const user = req.body;
 
@@ -26,11 +28,9 @@ router.post("/register", (req, res) => {
           });
       })
       .catch(error => {
-        res
-          .status(500)
-          .json({
-            error: "There was an error while saving the user to the database."
-          });
+        res.status(500).json({
+          error: "There was an error while saving the user to the database."
+        });
       });
   }
 });
@@ -54,16 +54,14 @@ router.post("/login", (req, res) => {
         }
       })
       .catch(error => {
-        res
-          .status(500)
-          .json({
-            error: "There was an error while saving the user to the database."
-          });
+        res.status(500).json({
+          error: "There was an error while logging in."
+        });
       });
   }
 });
 
-router.get("/users", (req, res) => {
+router.get("/users", restricted, (req, res) => {
   db("users")
     .select("id", "username", "password")
     .then(users => {
