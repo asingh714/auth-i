@@ -17,6 +17,7 @@ router.post("/register", (req, res) => {
     db("users")
       .insert(user)
       .then(ids => {
+        req.session.user = user;
         const id = ids[0];
         db("users")
           .where({ id })
