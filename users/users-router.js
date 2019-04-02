@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require("../data/dbConfig");
 const restricted = require("../auth/restricted");
 
-router.get("/users", restricted, (req, res) => {
+router.get("/", restricted, (req, res) => {
   db("users")
     .select("id", "username", "password")
     .then(users => {
