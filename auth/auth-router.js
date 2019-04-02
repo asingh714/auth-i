@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 
-const db = require("../dbConfig");
+const db = require("../data/dbConfig");
 
-const restricted = require("../../config/restricted");
+
 
 router.post("/register", (req, res) => {
   const user = req.body;
@@ -61,13 +61,5 @@ router.post("/login", (req, res) => {
   }
 });
 
-router.get("/users", restricted, (req, res) => {
-  db("users")
-    .select("id", "username", "password")
-    .then(users => {
-      res.json(users);
-    })
-    .catch(err => res.send(err));
-});
 
 module.exports = router;
